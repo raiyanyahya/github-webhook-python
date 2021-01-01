@@ -13,26 +13,17 @@ webhook_secret = getenv("github_webhook_secret")
 
 
 def remove_repo_event(webhook_data):
-    logging.info(
-        "remove repo event triggered for repo %s "
-        % webhook_data["repositories_removed"][0]["full_name"]
-    )
+    logging.info("remove repo event triggered for repo %s " % webhook_data["repositories_removed"][0]["full_name"])
     return
 
 
 def add_repo_event(webhook_data):
-    logging.info(
-        "add repo event triggered for repo %s "
-        % webhook_data["repositories_added"][0]["full_name"]
-    )
+    logging.info("add repo event triggered for repo %s " % webhook_data["repositories_added"][0]["full_name"])
     return
 
 
 def push_repo_event(webhook_data):
-    logging.info(
-        "push repo event triggered for repo %s "
-        % webhook_data["repository"]["full_name"],
-    )
+    logging.info("push repo event triggered for repo %s " % webhook_data["repository"]["full_name"])
     return
 
 
@@ -48,23 +39,14 @@ def verify_signature(signature, body):
 
 @app.route("/", methods=["POST"])
 def github_webhook():
-    if (
-        request.method != "POST"
-        or not request.headers.get("X-Github-Event")
-        or not request.headers.get("X-Hub-Signature")
-    ):
+    if request.method != "POST" or not request.headers.get("X-Github-Event") or not request.headers.get("X-Hub-Signature"):
         logging.error("Mandatory headers or method type not post")
         return "UNAUTHORIZED", 403, headers
     if not verify_signature(request.headers.get("X-Hub-Signature"), request.data):
         logging.error("Signature verification failed")
         return "UNAUTHORIZED", 401, headers
-    if (
-        request.headers.get("X-Github-Event") != "push"
-        and request.headers.get("X-Github-Event") != "installation_repositories"
-    ):
-        logging.error(
-            "Unknown event from github  %s " % request.headers.get("X-Github-Event")
-        )
+    if request.headers.get("X-Github-Event") != "push" and request.headers.get("X-Github-Event") != "installation_repositories":
+        logging.error("Unknown event from github  %s " % request.headers.get("X-Github-Event"))
         return "UNAUTHORIZED", 403, headers
     webhook_data = request.json
     if request.headers.get("X-Github-Event") == "push":
